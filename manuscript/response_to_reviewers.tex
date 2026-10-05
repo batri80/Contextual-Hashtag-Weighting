@@ -11,6 +11,7 @@
 \usepackage{lastpage}
 \usepackage{titlesec}
 \usepackage{microtype}
+\usepackage{xurl}
 \usepackage[colorlinks=true,linkcolor=headblue,urlcolor=headblue]{hyperref}
 
 \definecolor{headblue}{HTML}{1F4E8C}
@@ -352,7 +353,7 @@ Section~3 now describes the implementation exactly. The hashtag--hashtag energy 
 \item \textbf{De-duplication.} The original preprocessing description stated that duplicates and near-duplicates (Jaccard similarity $> 0.95$) were removed. The preprocessing code contains no such step, so the statement was incorrect. The revised text says that the data were not de-duplicated, and Section~6.6 discusses this as a limitation.
 \item \textbf{Dataset source.} The Election 2020 tweets were cited to a different collection from the one we used. They are now cited to the Kaggle collection we downloaded, and the COVID-19 collection, previously described only as public Twitter streams, is cited formally as well.
 \item \textbf{Smaller consistency fixes.} The weight range is stated as $(0, 1]$, since a tweet with one vocabulary hashtag gives that hashtag weight 1; Section~4.6 states which tables are single runs, which use three seeds and which use five; the cross-domain comparison of absolute Silhouette values now uses the five-seed means (0.32 and 0.14); and a remaining statement that interpretability of the energy decomposition ``supports the explanation of cluster assignments'' now notes that, with near-uniform weights, it explains little of them.
-\item \textbf{Back matter.} The Acknowledgments could be read as declaring institutional funding, which contradicted the funding statement; they now thank the institutions for computing facilities. The data availability statement now promises the code, fixed seeds and tweet identifiers rather than processed features, in line with the platform's terms on redistributing tweet text.
+\item \textbf{Back matter.} The Acknowledgments could be read as declaring institutional funding, which contradicted the funding statement; they now thank the institutions for computing facilities. The data availability statement now points to a public repository (\url{https://github.com/batri80/Contextual-Hashtag-Weighting}) holding the code, fixed seeds and result files, rather than promising processed features. Tweet text is not redistributed, in line with the platform's terms; exact tweet identifiers cannot be provided because the files we processed hold them only as rounded floating-point values (the Election 2020 collection itself stores them in this form), so the preprocessing script is given to rebuild the splits from the collections instead.
 \end{enumerate}
 
 \par\noindent\rule{\linewidth}{0.4pt}\par

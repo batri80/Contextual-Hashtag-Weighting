@@ -41,7 +41,7 @@ scripts/
                             top hashtags per cluster
   revision/                 Scripts added during the revision: diagnostics,
                             sensitivity analysis (Tables 6-7), COVID-19 splits and
-                            ablation, statistical checks for Table 4, tweet-ID export
+                            ablation, statistical checks for Tables 4, 6 and 7
 results/
   election2020/             Result files behind Tables 4, 6, 7 and Section 5.5
   covid19/                  Result files for COVID-19 (see the README there)
@@ -54,8 +54,8 @@ data/
 
 ## Reproducing the paper
 
-1. Obtain the datasets (`data/README.md`). Tweet text is not redistributed
-   here, in line with the platform's terms of use.
+1. Obtain the datasets (`data/README.md`). Tweet text and tweet IDs are not
+   redistributed here (see that file for why).
 2. In a folder for each dataset, run the pipeline in order:
    `phase1` → `phase2` → `phase3` → `fix_vocab_indices` → `phase4` →
    `enhanced_phase6` → `phase9_bert`.
