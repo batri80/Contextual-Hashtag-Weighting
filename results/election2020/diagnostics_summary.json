@@ -1,0 +1,87 @@
+{
+  "dataset": "dataset",
+  "K": 20,
+  "train_n": 851890,
+  "train_pct": 70.0,
+  "train_start": "2020-10-15 00:00:01",
+  "train_end": "2020-11-05 21:01:42",
+  "val_n": 182548,
+  "val_pct": 15.0,
+  "val_start": "2020-11-05 21:01:43",
+  "val_end": "2020-11-07 17:18:15",
+  "test_n": 182549,
+  "test_pct": 15.0,
+  "test_start": "2020-11-07 17:18:15",
+  "test_end": "2020-11-08 23:59:58",
+  "total_after_filtering": 1216987,
+  "duplicate_by_id": 159071,
+  "duplicate_by_raw_text": 205919,
+  "duplicate_by_clean_text": 297396,
+  "tweets_in_both_biden_and_trump_files": 192295,
+  "engagement_columns_present": [
+    "retweet_count",
+    "likes"
+  ],
+  "test_gamma_zero_fraction": 0.4910298056960049,
+  "test_gamma_mean": 0.8066326707100567,
+  "test_gamma_max": 11.037853010910055,
+  "note_gamma": "Phase 2 reads 'likes', not 'favorite_count'. If 'likes' is absent, Gamma uses retweets only; if Gamma == 0, E_temporal == 0 for that tweet.",
+  "WARNING_vocab": "hashtag_vocab.pkl holds a list - it was overwritten by preprocess_clustering.py (anomaly-detection paper).",
+  "vocab_size": 51608,
+  "test_hashtag_occurrences_in_vocab": 794571,
+  "temporal_active_fraction": 0.8720454182193913,
+  "temporal_dormant_reset_fraction": 0.0,
+  "temporal_no_history_fraction": 0.12795458178060864,
+  "test_rows": 182549,
+  "rows_with_zero_vocab_hashtags": 4,
+  "rows_with_one_vocab_hashtag": 9679,
+  "rows_with_2plus_vocab_hashtags": 172866,
+  "unique_rows": 140479,
+  "exact_duplicate_row_fraction": 0.23045867137042653,
+  "mean_max_deviation_from_uniform": 0.013601341340105825,
+  "p95_max_deviation_from_uniform": 0.047211036729950764,
+  "silhouette_summary": [
+    {
+      "variant": "binary",
+      "n": 182549,
+      "sil_mean": 0.1049,
+      "sil_sd": 0.0052,
+      "kmeans_s": 5.1907
+    },
+    {
+      "variant": "energy (as submitted)",
+      "n": 182549,
+      "sil_mean": 0.143,
+      "sil_sd": 0.007,
+      "kmeans_s": 5.7575
+    },
+    {
+      "variant": "energy, empty rows removed",
+      "n": 182545,
+      "sil_mean": 0.1341,
+      "sil_sd": 0.0038,
+      "kmeans_s": 6.2396
+    },
+    {
+      "variant": "energy, empty+duplicate rows removed",
+      "n": 140478,
+      "sil_mean": 0.0912,
+      "sil_sd": 0.0028,
+      "kmeans_s": 4.9989
+    },
+    {
+      "variant": "uniform 1/|H|",
+      "n": 182549,
+      "sil_mean": 0.1491,
+      "sil_sd": 0.0037,
+      "kmeans_s": 4.692
+    },
+    {
+      "variant": "uniform, empty+duplicate rows removed",
+      "n": 140478,
+      "sil_mean": 0.0886,
+      "sil_sd": 0.0099,
+      "kmeans_s": 3.8347
+    }
+  ]
+}

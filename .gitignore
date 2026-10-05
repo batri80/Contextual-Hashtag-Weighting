@@ -1,0 +1,13 @@
+# Tweet text and large intermediate files are not redistributed
+data/*.csv
+*.pkl
+*.npz
+*.npy
+!results/**/*.csv
+__pycache__/
+.DS_Store
+*.aux
+*.log
+*.out
+*.bbl
+*.blg

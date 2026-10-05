@@ -1,0 +1,366 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,margin=2.2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{titlesec}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=headblue,urlcolor=headblue]{hyperref}
+
+\definecolor{headblue}{HTML}{1F4E8C}
+\definecolor{statusgreen}{HTML}{2E8B3E}
+\definecolor{boxbg}{HTML}{F3F6FA}
+\definecolor{boxframe}{HTML}{C9D3E0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[R]{\small\color{gray}SNAM Submission 0b6d8341 --- Response to Reviewers}
+\fancyfoot[C]{\small\color{gray}Page \thepage\ of \pageref{LastPage}}
+
+\titleformat{\section}{\Large\bfseries\color{headblue}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titleformat{\subsection}{\large\bfseries\color{headblue}}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+
+\newtcolorbox{revcomment}{enhanced,breakable,colback=boxbg,colframe=boxframe,
+  boxrule=0.5pt,arc=2pt,left=8pt,right=8pt,top=6pt,bottom=6pt,before skip=6pt,after skip=8pt}
+\newcommand{\status}[1]{\textbf{\color{statusgreen}Status:} #1}
+\newcommand{\parthead}[1]{\par\medskip\textbf{#1}\par}
+\setlist[itemize]{leftmargin=1.4em,itemsep=3pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=4pt,topsep=3pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{headblue} Response to Reviewers}\\[8pt]
+{\large\itshape Submission 0b6d8341-9ce4-4b0f-a581-8d3ce2c69e30 --- ``Contextual Hashtag Weighting\\ for Social Media Clustering: A Zero-Energy Framework Evaluated Across Two Domains''}\\[6pt]
+Submitted to \textit{Social Network Analysis and Mining}
+\end{center}
+
+\vspace{4pt}
+
+Dear Professor Alhajj,
+
+We thank you and Reviewer~1 for a careful reading of our manuscript. Reviewer~1 raised six specific points (the size of the train--test splits, the fallback for out-of-vocabulary hashtags, sensitivity to the component weights $\alpha$ and to the temporal parameters $\tau_{\text{dormant}}$ and $\tau_{\text{decay}}$, the reporting of the Davies--Bouldin index, and the normality assumption behind our tests) and asked for a broader comparison with the literature. You asked us to report the results accurately, to rewrite overstated conclusions and to explain the limitations fully.
+
+Addressing these requests turned out to involve more than adding tables. Before writing any new text, we checked every description in the manuscript against the code that produced its results, and this showed that several descriptions were wrong. The embeddings come from the sentence-transformer all-MiniLM-L6-v2, not from GloVe; the data were split 70/15/15, not 80/20; the temporal energy contains an engagement factor that the manuscript did not mention; and the statement that Wilcoxon tests confirmed significance could not have been true with five runs per method. We have corrected each of these and say so in the responses below rather than describing the corrections only as clarifications.
+
+The most consequential finding of this check concerns the weighting itself. Because the energies of the hashtags within a tweet differ little in practice, the Boltzmann weights within a tweet stay close to uniform, and on Election 2020 uniformly weighted hashtag vectors perform on par with the energy weights (Silhouette $0.149 \pm 0.004$ against $0.143 \pm 0.007$, Welch $p = 0.14$). We ran this comparison while checking the manuscript, report it in Section~5.5, and have revised the Abstract, Introduction, Discussion and Conclusion so that the gains are attributed mainly to the hashtag representation rather than to the contextual weighting. The main empirical finding of the paper, the ordering of representations (hashtag features above combined, TF-IDF and BERT [CLS] features in both domains), is unchanged. For the same reason we changed the subtitle from ``Cross-Domain Validation of a Zero-Energy Framework'' to ``A Zero-Energy Framework Evaluated Across Two Domains'', because two datasets support consistency rather than validation.
+
+The new experiments are a sensitivity analysis over 16 settings of $(\alpha_1, \alpha_2, \alpha_3)$ and 20 settings of the temporal parameters, each run with five seeds on the full Election 2020 test split (182,549 tweets), together with normality tests and non-parametric tests for the BERT comparison. The COVID-19 ablation, which had been run but not reported, is now included. Every number quoted in this letter and in the revised sections has been checked against its result file.
+
+Below we address the Editor's requests first and then each of Reviewer~1's comments. A final section lists further corrections that no reviewer raised but that we identified during the same check.
+
+\par\noindent\rule{\linewidth}{0.4pt}\par
+
+%% =====================================================================
+\section{Editor}
+
+\begin{revcomment}
+\textbf{Editor's comment:} Report the results accurately, rewrite the overstated conclusions, and explain the limitations fully.
+\end{revcomment}
+
+\status{Resolved --- results reconciled and corrected, overstated claims rewritten, and the limitations section rebuilt.}
+
+\subsection{E.1. Accurate reporting of results}
+
+\parthead{Silhouette values reconciled.}
+The Election 2020 Hashtag-Only Silhouette at $K = 20$ appeared as 0.1473 in the original Tables~1--2, as $0.1424 \pm 0.006$ in the original Table~3 and as 0.1049 in the original Table~4. On tracing each value to its source, the three numbers came from three different protocols: a single run with seed 42, the mean of five runs with seeds 42--46, and the ablation study, which L2-normalises each feature vector before mixing. None of them is wrong, but the manuscript did not say which protocol each table used. Every table caption now states its protocol, the main comparison uses the five-seed value $0.1424 \pm 0.006$ (population standard deviation, Table~4), and Section~5.4 explains why the ablation values differ from those in Tables~2--4. The sensitivity analysis reproduces the same feature matrix and gives $0.143 \pm 0.007$ for the default setting; Section~5.5 now explains that this differs from the 0.142 of Table~4 only because the Silhouette sample is drawn with a fixed seed in the new runs and was not in the original ones. Single-run values vary across seeds by about $\pm 0.007$, reflecting both the K-means initialisation and the random 10,000-point Silhouette sample; Section~4.5 now says so and bases conclusions on multi-seed results where they are available.
+
+\parthead{Abstract corrected for the choice of $K$.}
+The original Abstract reported a 45\% Silhouette gain from $K = 2$ to $K = 20$ as if it held for both datasets. It holds for COVID-19. For Election 2020 the $K = 20$ value exceeds the $K = 2$ value by only 0.006, which is smaller than the seed-to-seed standard deviation of about 0.007, so this dataset does not discriminate between the two values. The Abstract, Section~1.1, Section~5.1, Table~8 and the Conclusion now say this explicitly, and $K = 20$ is described as the best value within the tested range for COVID-19 rather than as an optimum for both datasets.
+
+\parthead{Timing comparison scoped and corrected.}
+The speed-up of K-means on hashtag features over BERT embeddings compares clustering time only and excludes the computation of hashtag weights and BERT embeddings; the caption of Table~4 and Section~5.3 now state this. The 1,724.7\,s reported in the former Table~2 came from clustering a dense copy of the sparse matrix, so the timing column has been removed from that table and timing is reported only in Table~4. Recomputing the ratios from the table values gives $4.15/0.20 = 20.8$ and $147.8/6.2 = 23.8$, not the 20.5 and 23.7 printed before; the text now gives ``about 21 times'' and ``about 24 times'' in Section~5.3, Section~6.5 and Table~8, and Table~4 reports the underlying times.
+
+\parthead{COVID-19 ablation reported.}
+The hashtag/TF-IDF ablation had also been run on COVID-19 ($K = 20$, three seeds), but its results were missing from the manuscript. They are now in Table~5 and show the same pattern as Election 2020: pure hashtag features $0.345 \pm 0.005$, 75/25 mixture $0.168 \pm 0.119$, 50/50 mixture $0.057 \pm 0.007$, 25/75 mixture $0.066 \pm 0.004$, and pure TF-IDF $0.071 \pm 0.002$.
+
+\parthead{Factual errors fixed.}
+The embedding model and the split ratio are corrected (see R1.1 and R1.2 below). The duplicate references [19] and [20] have been merged, and the mention of the Omicron variant has been removed, because Omicron emerged after the COVID-19 data were collected.
+
+\subsection{E.2. Overstated conclusions rewritten}
+
+The claim that our findings ``challenge three assumptions'', including that ``deep learning universally outperforms simpler approaches'', now reads as findings on these two datasets. ``Validates generalizability'' and ``cross-domain validation demonstrating framework generalizability'' now read as consistency across two domains, and the keyword ``Cross-domain validation'' is now ``Cross-domain evaluation''. ``Enables real-time deployment'' has been removed, because neither end-to-end nor streaming performance was measured. The zero-energy account of why combined features score lower is now presented as one possible explanation, alongside the effect of mixing a sparse block with a block whose mass is spread over many weakly informative dimensions. Very large relative improvements computed on small Silhouette values (for example, +736\%) have been replaced by absolute differences $\Delta S$. The BERT baseline is now described as ``off-the-shelf BERT [CLS] embeddings'' in the Abstract, and Section~2.3 cites Reimers and Gurevych (2019) for the known weakness of [CLS] embeddings as a basis for similarity, so that it is not presented as a strong baseline. Statements about the sensitivity analyses in the Abstract and Conclusion now say that they were carried out on Election 2020. Finally, the conclusions about the weighting itself have been revised in light of the uniform-weights comparison described in A.1.
+
+\subsection{E.3. Limitations explained fully}
+
+Section~6.6 has been rewritten in three groups. The first concerns evaluation: only internal validity indices are used, because no human-annotated topic labels are available, and Silhouette is computed in each representation's own feature space, so differences across representations should not be read as differences in topic quality. The second concerns the method: the weights within a tweet are close to uniform and perform on par with uniform weights on Election 2020 (A.1); the Election 2020 corpus spans 25 days, so the dormancy reset at $\tau_{\text{dormant}} = 30$ days is never applied; and the engagement factor is zero for about half of the Election 2020 test tweets. The third concerns the data: only English Twitter data from two events are used; only tweets with at least two hashtags are included; 21.6\% of COVID-19 test tweets have no vocabulary hashtag and are represented by the zero vector, which can raise Silhouette; and the Election 2020 corpus was not de-duplicated and contains tweets collected under both candidate hashtags. We also quantify this last point: 23\% of the Election 2020 test tweets have a hashtag vector identical to that of an earlier test tweet, and removing these rows lowers the Hashtag-Only Silhouette at $K = 20$ from 0.143 to 0.091 (uniform weights: 0.089). Section~6.6 now states that the absolute Election 2020 values are inflated by repeated hashtag vectors and that the baselines were not re-run on the reduced set.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Abstract, Section~1.1, Section~5.1, Table~8 and Section~7: $K$ claim corrected for Election 2020.
+\item Captions of Tables~2--7: protocol and standard-deviation convention stated; Section~4.5: Silhouette sampling variation stated.
+\item Caption of Table~4, Section~5.3, Table~8 and Section~6.5: timing scope stated and speed-ups corrected to about 21 and 24 times; timing column removed from Table~3.
+\item Table~5: COVID-19 ablation added.
+\item Title, Abstract, keywords, Sections~1, 5, 6 and 7: overstated claims rewritten.
+\item Section~6.6: limitations rewritten in three groups.
+\end{itemize}
+
+%% =====================================================================
+\section{Reviewer \#1}
+
+\subsection{R1.1. Size of the training and test sets}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} Please give the number of tweets in the training and test sets, and confirm that temporal ordering was preserved for both datasets.
+\end{revcomment}
+
+\status{Resolved --- counts and periods added in a new Table~1; the split ratio stated in the manuscript has been corrected.}
+
+We agree that the counts were missing. On checking the implementation we also found that it used a chronological 70/15/15 train/validation/test split, not the 80/20 split stated in the manuscript, and we have corrected the text. Tweets are sorted by timestamp and split without shuffling, so every test tweet is later than every training tweet; the same procedure is applied to both datasets.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+Dataset & Train & Validation & Test & Train period & Test period \\
+\midrule
+US Election 2020 & 851,890 (70\%) & 182,548 (15\%) & 182,549 (15\%) & 15 Oct -- 5 Nov 2020 & 7 -- 8 Nov 2020 \\
+COVID-19 & 29,364 (70\%) & 6,292 (15\%) & 6,293 (15\%) & 19 Apr 2020 -- 16 May 2021 & 3 -- 27 Jun 2021 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The training split provides the hashtag vocabulary, the co-occurrence (PMI) statistics, the hashtag usage histories and the TF-IDF vocabulary, and all reported clustering results are computed on the test split. The figure of 182,549 tweets given in the original manuscript is the size of the Election 2020 test split, and the text now says so.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Section~4.2: split ratio corrected to 70/15/15, with the chronological procedure described.
+\item Section~4.1: new Table~1 with the counts and periods above.
+\end{itemize}
+
+\subsection{R1.2. Fallback for out-of-vocabulary hashtags}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} The fallback for hashtags missing from the GloVe vocabulary (``character-level averaging'') is not specified.
+\end{revcomment}
+
+\status{Resolved --- the embedding model was described incorrectly; the corrected description makes a fallback unnecessary.}
+
+\parthead{Root cause:}
+On checking the implementation against the text, we found that the manuscript described the embeddings incorrectly, and we apologise for the error. Hashtag and tweet embeddings are computed with the sentence-transformer all-MiniLM-L6-v2 (384 dimensions), not with 300-dimensional GloVe vectors. This model tokenises its input into WordPiece subword units, so every hashtag receives an embedding and no out-of-vocabulary fallback is needed; a concatenated hashtag such as \#blacklivesmatter, for example, is split into subword pieces rather than mapped to an unknown token. Before encoding, underscores in hashtags are replaced by spaces.
+
+A separate vocabulary threshold applies to the clustering features. A hashtag is included only if it occurs at least 10 times in the training split, giving 16,841 hashtags for Election 2020 and 897 for COVID-19. Only 4 of the 182,549 Election 2020 test tweets have no hashtag in this vocabulary. For COVID-19 the figure is 1,361 of 6,293 test tweets (21.6\%), because that corpus is smaller and its hashtags are more varied. These tweets are represented by an all-zero hashtag vector; we now report this and discuss it as a limitation, since identical vectors cluster tightly and can raise Silhouette.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Sections~3.2.1, 3.2.2 and 4.2: model name, dimension, tokenisation and vocabulary threshold given; the GloVe description and the 4\,GB resource claim removed.
+\item Section~6.6: the zero-vector caveat for COVID-19 added.
+\end{itemize}
+
+\subsection{R1.3. Sensitivity to the component weights $\alpha$}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} The paper does not report whether changing $\alpha_1$, $\alpha_2$, $\alpha_3$ affects clustering quality.
+\end{revcomment}
+
+\status{Resolved --- new sensitivity analysis over 16 settings (Table~6); no setting differs significantly from the default.}
+
+We varied $(\alpha_1, \alpha_2, \alpha_3)$ over the simplex in steps of 0.25 (15 settings with $\alpha_1 + \alpha_2 + \alpha_3 = 1$) and added the default $\alpha_1 = \alpha_2 = \alpha_3 = 0.33$. For each setting we recomputed the hashtag weights on the full Election 2020 test split and ran K-means ($K = 20$) with five seeds, holding $\tau_{\text{dormant}} = 30$ days and $\tau_{\text{decay}} = 7$ days fixed. The default setting reproduces the submitted feature matrix exactly.
+
+\begin{center}
+\small
+\begin{tabular}{cccccc}
+\toprule
+$\alpha_1$ (hashtag) & $\alpha_2$ (text) & $\alpha_3$ (temporal) & Silhouette (mean $\pm$ s.d.) & Davies--Bouldin & Calinski--Harabasz \\
+\midrule
+0.33 & 0.33 & 0.33 & $0.1430 \pm 0.0070$ (default) & 2.266 & 8,910 \\
+1.00 & 0.00 & 0.00 & $0.1408 \pm 0.0086$ & 2.333 & 9,164 \\
+0.75 & 0.25 & 0.00 & $0.1374 \pm 0.0104$ & 2.321 & 9,206 \\
+0.75 & 0.00 & 0.25 & $0.1478 \pm 0.0078$ & 2.208 & 9,039 \\
+0.50 & 0.50 & 0.00 & $0.1363 \pm 0.0148$ & 2.417 & 9,211 \\
+0.50 & 0.25 & 0.25 & $0.1422 \pm 0.0093$ & 2.269 & 9,015 \\
+0.50 & 0.00 & 0.50 & $0.1379 \pm 0.0039$ & 2.239 & 8,829 \\
+0.25 & 0.75 & 0.00 & $0.1378 \pm 0.0048$ & 2.350 & 9,091 \\
+0.25 & 0.50 & 0.25 & $0.1366 \pm 0.0084$ & 2.282 & 8,946 \\
+0.25 & 0.25 & 0.50 & $0.1410 \pm 0.0103$ & 2.214 & 8,828 \\
+0.25 & 0.00 & 0.75 & $0.1402 \pm 0.0051$ & 2.265 & 8,666 \\
+0.00 & 1.00 & 0.00 & $0.1370 \pm 0.0082$ & 2.310 & 9,127 \\
+0.00 & 0.75 & 0.25 & $0.1423 \pm 0.0069$ & 2.269 & 9,055 \\
+0.00 & 0.50 & 0.50 & $0.1325 \pm 0.0105$ & 2.319 & 8,727 \\
+0.00 & 0.25 & 0.75 & $0.1384 \pm 0.0047$ & 2.280 & 8,616 \\
+0.00 & 0.00 & 1.00 & $0.1305 \pm 0.0113$ & 2.201 & 8,445 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Clustering quality is stable across the whole simplex. Mean Silhouette ranges from 0.131 to 0.148, against $0.143 \pm 0.007$ for the default, and no setting differs significantly from the default: under Welch's t-test with Holm correction every adjusted $p$-value is 1.00, the smallest unadjusted $p$ is 0.074, and a one-way ANOVA across all 16 settings gives $p = 0.34$. Davies--Bouldin (2.20--2.42) and Calinski--Harabasz (8,445--9,211) vary just as little. The lowest mean comes from the temporal component alone; every setting that includes the hashtag or text component scores at least 0.132. The original statement in Section~3.5 that ablation studies had validated uniform weighting referred to a different experiment (mixing hashtag and TF-IDF features) and has been replaced by this analysis.
+
+We note one consequence of this result for the paper as a whole. The insensitivity to $\alpha$ is consistent with the finding, reported in A.1, that the energy weights within a tweet stay close to uniform, and the revised manuscript makes this link explicit rather than presenting the insensitivity only as robustness.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Section~3.5: default stated as 0.33 each, with a forward reference to the analysis.
+\item Section~5.5: new Table~6 and discussion; the earlier statement about ablation studies removed.
+\end{itemize}
+
+\subsection{R1.4. Temporal parameters $\tau_{\text{dormant}}$ and $\tau_{\text{decay}}$}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} No empirical justification is given for $\tau_{\text{dormant}} = 30$ days and $\tau_{\text{decay}} = 7$ days.
+\end{revcomment}
+
+\status{Resolved --- new sensitivity analysis over 20 combinations (Table~7); no combination differs significantly from the default.}
+
+We evaluated $\tau_{\text{dormant}} \in \{1, 3, 7, 14, 30\}$ days and $\tau_{\text{decay}} \in \{1, 3, 7, 14\}$ days, 20 combinations in all, with $\alpha_1 = \alpha_2 = \alpha_3 = 0.33$ and the same protocol as in R1.3. Mean Silhouette ranges from 0.135 to 0.144, against 0.143 for the default (30, 7). After Holm correction every adjusted $p$-value is 1.00, the smallest unadjusted $p$ is 0.061, and a one-way ANOVA gives $p = 0.69$.
+
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+$\tau_{\text{dormant}}$ $\backslash$ $\tau_{\text{decay}}$ & 1 day & 3 days & 7 days & 14 days \\
+\midrule
+1 day   & 0.1396 & 0.1396 & 0.1396 & 0.1396 \\
+3 days  & 0.1400 & 0.1416 & 0.1348 & 0.1400 \\
+7 days  & 0.1376 & 0.1436 & 0.1430 & 0.1386 \\
+14 days & 0.1376 & 0.1436 & 0.1430 & 0.1386 \\
+30 days & 0.1376 & 0.1436 & 0.1430 (default) & 0.1386 \\
+\bottomrule
+\end{tabular}
+
+{\footnotesize Mean Silhouette over five seeds; standard deviations 0.004--0.008.}
+\end{center}
+
+Two patterns in the table follow from how the dormancy rule works on this dataset, and the manuscript now explains both. First, the rows for $\tau_{\text{dormant}} = 7$, 14 and 30 days are identical. The activity term counts a hashtag's uses within the last $\Delta T = 7$ days, so a hashtag unseen for more than 7 days already has zero recent activity and zero temporal energy whether or not the dormancy reset applies; a dormancy threshold above $\Delta T$ therefore has no additional effect. Second, with $\tau_{\text{dormant}} = 1$ day, $\tau_{\text{decay}}$ has no effect. Usage histories come from the training split, and the test period begins about 1.8 days after training ends, so every test hashtag is reset to zero temporal energy, as the Lifecycle Equivalence rule prescribes. Switching off the temporal component in this way changes Silhouette by only 0.003.
+
+The chosen values of 30 and 7 days follow typical monthly and weekly timescales of social-media activity, and the analysis shows that the results do not depend on them. We also state that the Election 2020 corpus spans 25 days, so the dormancy reset at $\tau_{\text{dormant}} = 30$ days is not exercised on this dataset.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Section~3.5: justification of the default values.
+\item Section~5.5: new Table~7 and the explanation of both patterns.
+\item Section~6.6: the 25-day corpus caveat added to the limitations.
+\end{itemize}
+
+\subsection{R1.5. Davies--Bouldin index for all $K$}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} Table~1 reports Silhouette but not Davies--Bouldin (DB) for all $K$.
+\end{revcomment}
+
+\status{Resolved --- table reformatted with one labelled column per metric; disagreements between the metrics are now discussed.}
+
+Table~1 of the submitted manuscript did report DB for every $K \in \{2, 5, 10, 15, 20\}$ on both datasets, but we accept that the DB column was not clear in the typeset layout. The table (now Table~2) has been reformatted so that each metric has its own labelled column. Calinski--Harabasz values, which Section~4.5 described but the manuscript never reported, are now given for every setting of the sensitivity analysis (Table~6).
+
+The comment also led us to discuss a point the manuscript had passed over: Silhouette and DB do not always agree on the best $K$. DB is lowest at $K = 15$ for COVID-19 and at $K = 10$ for Election 2020, whereas Silhouette is highest at $K = 20$ for COVID-19 and does not separate $K = 2$ from $K = 20$ for Election 2020 (see E.1). Section~5.1 now reports the best $K$ under each metric, explains that the two indices weigh cohesion and separation differently, and describes $K = 20$ as the best value within the tested range rather than as a global optimum.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Table~2 (formerly Table~1): reformatted with labelled Silhouette and DB columns.
+\item Table~6: Calinski--Harabasz reported.
+\item Section~5.1: disagreement between the metrics discussed.
+\end{itemize}
+
+\subsection{R1.6. Normality assumption and non-parametric tests}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} It is not reported whether normality was checked for the t-tests or whether non-parametric alternatives were considered.
+\end{revcomment}
+
+\status{Resolved --- normality tests and non-parametric tests added; an incorrect statement about Wilcoxon tests removed.}
+
+A Shapiro--Wilk test on the per-run Election 2020 Silhouette scores does not reject normality for any method ($p \geq 0.35$ throughout). Table~4 of the manuscript reports the test for the two methods it compares at $K = 20$; the $K = 2$ rows below are given for completeness:
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+Method (Election 2020, five runs) & $K$ & Shapiro--Wilk $W$ & $p$ \\
+\midrule
+Hashtag-Only & 20 & 0.943 & 0.69 \\
+BERT [CLS]   & 20 & 0.974 & 0.90 \\
+Hashtag-Only & 2  & 0.982 & 0.95 \\
+TF-IDF-Only  & 2  & 0.919 & 0.52 \\
+Combined     & 2  & 0.889 & 0.35 \\
+BERT [CLS]   & 2  & 0.964 & 0.84 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For Hashtag-Only against BERT at $K = 20$ we now report four tests. Welch's t-test, which does not assume equal variances and is our primary test because the BERT runs vary much less than the hashtag runs, gives $p = 1.9 \times 10^{-5}$ on Election 2020 and $p < 10^{-5}$ on COVID-19. The paired t-test, kept as a secondary check, gives $p = 1.4 \times 10^{-5}$ and $p < 10^{-6}$. The Mann--Whitney U test gives $p = 0.008$ on both datasets, which is the smallest value attainable with five runs per group, so the conclusion does not depend on the normality assumption.
+
+The fourth test led us to correct the manuscript. With five paired runs, the smallest $p$-value an exact two-sided Wilcoxon signed-rank test can produce is $2/32 = 0.0625$, so it cannot reach significance at the 0.05 level whatever the effect size. Our earlier statement that Wilcoxon tests confirmed significance was therefore incorrect, and we have removed it; Section~4.6 now explains why the test is not used. We also state that the large Cohen's $d$ values (35.6 and 15.7, computed with the population standard deviation) reflect the low seed-to-seed variance of K-means on a fixed dataset, and we no longer describe them as ``enormous''.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Section~4.6: test procedure rewritten (Shapiro--Wilk, Welch as primary test, paired t-test as secondary check, Mann--Whitney U); the Wilcoxon statement replaced by an explanation of why it is not used.
+\item Table~4: Welch, paired t, Mann--Whitney and Shapiro--Wilk results added; Section~5.3: interpretation of Cohen's $d$.
+\end{itemize}
+
+\subsection{R1.7. Literature review and up-to-date comparison}
+
+\begin{revcomment}
+\textbf{Reviewer comment:} The comparison with existing methods is not comprehensive; three references are suggested.
+\end{revcomment}
+
+\status{Resolved --- Section~2 expanded with recent work on short-text, embedding-based and hashtag clustering; the three suggested references have respectfully not been added, for the reason below.}
+
+We read the three suggested works carefully. They address AI-based aerial object detection for UAV navigation (Sahani et al., 2026), secure data-aggregation routing in IoT sensor networks (Haseeb et al., 2020), and visual attention modelling for image and video processing (Ishtiaq et al., 2025). None of them involves text clustering, hashtags or social-media data, and we could not find a way to cite them that would help readers place our contribution.
+
+To address the underlying concern, we have expanded Section~2 with work that bears directly on our method. BERTopic (Grootendorst, 2022) and Sentence-BERT (Reimers and Gurevych, 2019), which were already cited, are now discussed as embedding-based approaches to short-text clustering, and three new references are added: the comparison of short-text embeddings for unsupervised event detection in tweet streams by Mazoyer et al. (2024); the temporal clustering of hashtag senses by Stilo and Velardi (2017); and hashtag co-occurrence networks, including the TwitterTagNet dataset recently published in this journal (Firuzbakht and Khansari, 2025). We position our method against each: unlike document-embedding methods, it represents each tweet by contextually weighted hashtags, and unlike purely temporal hashtag clustering, it combines co-occurrence, text alignment and temporal activity in a single energy function. While checking the existing citations we also found two that did not support their sentences; these are described in A.3.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Sections~2.1--2.3: three references added (Mazoyer et al., 2024; Stilo and Velardi, 2017; Firuzbakht and Khansari, 2025), the discussion of BERTopic and Sentence-BERT expanded, and our method positioned against each.
+\end{itemize}
+
+%% =====================================================================
+\section{Additional Corrections Identified During This Revision}
+
+\status{Self-identified and corrected --- not raised by the reviewer, but disclosed here in the interest of full transparency.}
+
+While checking every description and number in the manuscript against the code and result files, as described in our opening remarks, we found the following issues.
+
+\subsection{A.1. The contextual weights perform on par with uniform weights}
+
+\parthead{Root cause:}
+The weights are obtained by a Boltzmann softmax over the hashtag energies of a tweet. The hashtag and text energies are bounded by $\alpha_1$ and $\alpha_2$, and although the temporal energy has no fixed lower bound, it is zero for about half of the Election 2020 test tweets. In practice, therefore, the energies of the hashtags within a tweet differ little relative to the softmax scale, and the weights stay close to uniform: the largest deviation of a tweet's weights from $1/|H_d|$ averages 0.014 (95th percentile 0.047). The original manuscript did not examine this, and it did not compare the energy weights with simpler weightings. We ran that comparison on Election 2020 ($K = 20$, five seeds) while checking the manuscript: uniform weights $1/|H_d|$ give Silhouette $0.149 \pm 0.004$, the energy weights $0.143 \pm 0.007$ (Welch $p = 0.14$), and binary hashtag indicators $0.105 \pm 0.005$.
+
+\parthead{Effect on the paper's claims.}
+Uniform weights perform on par with the energy weights, so the advantage over TF-IDF and BERT features comes mainly from the hashtag representation and its per-tweet normalisation rather than from the contextual weighting itself. The ordering of representations, which is the paper's main empirical result, is unaffected. What changes is how that result is attributed, and we have revised every section that implied otherwise rather than confining the correction to the limitations. The finding is also consistent with the insensitivity to $\alpha$ reported in R1.3. Section~6.6 identifies more selective weighting, for example through a temperature parameter in the softmax of Eq.~(6), as a direction for future work.
+
+\parthead{Manuscript changes:}
+\begin{itemize}
+\item Section~5.5: uniform and binary results reported after the discussion of weight uniformity.
+\item Abstract, Section~1.1 (including Contribution~1), Sections~6.5--6.6 and Section~7: attribution of the gains revised, and ``more selective weighting'' added to future work.
+\end{itemize}
+
+\subsection{A.2. Method description aligned with the implementation}
+
+Section~3 now describes the implementation exactly. The hashtag--hashtag energy uses min--max normalised PMI and the similarity term $(1 + \cos)/2$, both in $[0, 1]$, with $\beta_1 = \beta_2 = 1/2$; joint probabilities are estimated per tweet and marginal probabilities per hashtag occurrence, and because the PMI is min--max normalised only the ordering of pairs matters. The activity ratio $\rho_i$ divides the number of uses in the last $\Delta T = 7$ days by the maximum number of uses in any 90-day window of the training split, so that $\rho_i \in [0, 1]$. The temporal energy is scaled by the engagement of the tweet, $\Gamma_d = \ln(1 + \text{retweets} + \text{likes})$, which the original text omitted. Because $\Gamma_d$ is unbounded, the earlier claim that every energy lies in $[-1, 0]$ was incorrect and has been removed. The default component weights are stated as 0.33 each, as in the code, rather than as exactly $1/3$.
+
+\subsection{A.3. Other corrections}
+
+\begin{enumerate}
+\item \textbf{Citations that did not support their sentences.} Sedhai and Sun (2015) was cited for TF-IDF hashtag weighting but describes HSpam14, a spam-tweet collection; Ling et al. (2015) was cited for hashtag embeddings but studies Word2Vec adaptations for syntax. Both citations have been removed and the sentence rewritten with Mikolov et al. (2013). Reimers and Gurevych (2019) is now cited for the weakness of raw [CLS] embeddings.
+\item \textbf{Standard-deviation convention.} Values computed in different scripts used different conventions. Table~4 now uses the population standard deviation in both columns, as does Cohen's $d$; the sensitivity analyses report the sample standard deviation; and the Table~5 caption states which convention each column uses.
+\item \textbf{Preprocessing details.} The text now states that numbers are removed along with special characters, that tweets are kept if they have \emph{more than} 10 characters of cleaned text (the original said ``at least''), and the two missing TF-IDF parameters (terms occurring in at least 5 and at most 80\% of training tweets).
+\item \textbf{Unsupported reference to supplementary material.} Section~4.4 cited an earlier comparison of K-means with hierarchical (Ward) clustering and Gaussian mixture models on COVID-19, with ``details in supplementary materials''. No supplementary material was submitted and that comparison is not part of this study, so the sentence has been removed.
+\item \textbf{Mechanism for combined features.} The original text attributed the lower scores of mixed features to TF-IDF ``noise'' that ``dominates the feature space''. Both blocks are L2-normalised and scaled equally, so neither dominates by scale; Section~6.1 now says that the TF-IDF block spreads its mass over more, less informative dimensions, which makes distances in the combined space less discriminative, and presents this as one possible explanation.
+\item \textbf{De-duplication.} The original preprocessing description stated that duplicates and near-duplicates (Jaccard similarity $> 0.95$) were removed. The preprocessing code contains no such step, so the statement was incorrect. The revised text says that the data were not de-duplicated, and Section~6.6 discusses this as a limitation.
+\item \textbf{Dataset source.} The Election 2020 tweets were cited to a different collection from the one we used. They are now cited to the Kaggle collection we downloaded, and the COVID-19 collection, previously described only as public Twitter streams, is cited formally as well.
+\item \textbf{Smaller consistency fixes.} The weight range is stated as $(0, 1]$, since a tweet with one vocabulary hashtag gives that hashtag weight 1; Section~4.6 states which tables are single runs, which use three seeds and which use five; the cross-domain comparison of absolute Silhouette values now uses the five-seed means (0.32 and 0.14); and a remaining statement that interpretability of the energy decomposition ``supports the explanation of cluster assignments'' now notes that, with near-uniform weights, it explains little of them.
+\item \textbf{Back matter.} The Acknowledgments could be read as declaring institutional funding, which contradicted the funding statement; they now thank the institutions for computing facilities. The data availability statement now promises the code, fixed seeds and tweet identifiers rather than processed features, in line with the platform's terms on redistributing tweet text.
+\end{enumerate}
+
+\par\noindent\rule{\linewidth}{0.4pt}\par
+
+We are grateful to the Editor and to Reviewer~1. Answering the comments on the embedding model and on sensitivity led us to check the whole manuscript against its code and result files, and that check found errors in the method description and an important finding about the weighting that the original text had stated incorrectly. We believe the revised manuscript, with these errors corrected, the sensitivity analyses added and the conclusions matched to the evidence, is more accurate as a result.
+
+\medskip
+Sincerely,\\
+Krishnan Batri, on behalf of all authors
+
+\end{document}
