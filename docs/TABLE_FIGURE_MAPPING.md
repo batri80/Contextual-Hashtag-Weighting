@@ -23,6 +23,8 @@ them after running the script.
 | Section 5.5 | IDF-weighted hashtags: per-tweet normalised 0.138 ± 0.025 (p = 0.67), L2-normalised 0.124 ± 0.005 (p = 0.001); energy and uniform re-run alongside | `scripts/revision/idf_baseline.py` | `results/election2020/idf_baseline_election2020.csv` |
 | Section 6.6 | Repeated hashtag vectors (23%); Silhouette after removing them (0.091; uniform 0.089) | `scripts/revision/revision_diagnostics.py` | `results/election2020/diagnostics_runs.csv`, `diagnostics_summary.json` |
 | Section 6.3 | Top hashtags per cluster | `scripts/experiments/qualitative_analysis.py` | `cluster_stats_k20_election2020.csv` *(local)* |
+| Fig. 1 | Framework overview (diagram, no data) | `manuscript/figures/fig_framework.tex` (TikZ; compile with pdflatex) | `manuscript/fig_framework.pdf` |
+| Fig. 2 | Per-seed Silhouette of five weighting schemes | `manuscript/figures/fig_weighting.tex` (pgfplots; values from the two files on the right) | `results/election2020/diagnostics_runs.csv`, `idf_baseline_election2020.csv` |
 | Table 8 | Cross-domain summary | Derived from Tables 2–7 | — |
 
 ## Notes

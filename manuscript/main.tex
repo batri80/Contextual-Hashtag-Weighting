@@ -141,7 +141,14 @@ Most social media clustering methods are evaluated on a single dataset or domain
 
 \section{Zero-Energy Baseline Framework}\label{sec3}
 
-This section presents the framework for contextual hashtag weighting. We begin with the zero-energy principle (Section~\ref{subsec8}), formalize the energy decomposition (Section~\ref{subsec9}), introduce the Lifecycle Equivalence rule (Section~\ref{subsec10}), and derive the final weight calculation (Section~\ref{subsec11}). The equations below describe the implementation used for all reported experiments.
+This section presents the framework for contextual hashtag weighting. We begin with the zero-energy principle (Section~\ref{subsec8}), formalize the energy decomposition (Section~\ref{subsec9}), introduce the Lifecycle Equivalence rule (Section~\ref{subsec10}), and derive the final weight calculation (Section~\ref{subsec11}). The equations below describe the implementation used for all reported experiments, and Fig.~\ref{fig:framework} summarises how they fit together: three energy components, computed from statistics of the training split and from the tweet itself, are summed, converted into weights within each tweet by a Boltzmann softmax, and used to build the sparse tweet vectors that are clustered.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_framework.pdf}
+\caption{Overview of the Zero-Energy Baseline framework. Every vocabulary hashtag $h_i$ of a tweet $d$ starts from zero energy, and three components can only lower it: co-occurrence (PMI) and semantic similarity with the other hashtags of the tweet (Eq.~\ref{eq:hashtag}), similarity with the tweet text (Eq.~\ref{eq:text}), and recent activity scaled by the engagement of the tweet (Eqs.~\ref{eq:activity}--\ref{eq:temporal}). The Lifecycle Equivalence rule (dashed box) sets the temporal energy of new and dormant hashtags to zero. A Boltzmann softmax over the hashtags of the tweet converts the total energies (Eq.~\ref{eq:total}) into weights that sum to one (Eq.~\ref{eq:weight}), and these weights form the sparse tweet vector clustered with K-means (Eq.~\ref{eq:representation}).}
+\label{fig:framework}
+\end{figure}
 
 \subsection{The Zero-Energy Principle}\label{subsec8}
 
@@ -220,6 +227,7 @@ where $Z_d$ is the partition function normalizing weights across the vocabulary 
 The weighted hashtag representation of tweet $d$ is the sparse vector
 \begin{equation}
 \mathbf{x}_d = \sum_{h_i \in H_d} w(h_i, d) \cdot \mathbf{1}_{h_i}
+\label{eq:representation}
 \end{equation}
 where $\mathbf{1}_{h_i}$ is the one-hot indicator of hashtag $h_i$ in the vocabulary. A tweet with no vocabulary hashtag is represented by the zero vector.
 
@@ -496,7 +504,14 @@ $\tau_{\text{dormant}}$ $\backslash$ $\tau_{\text{decay}}$ & 1 day & 3 days & 7 
 
 Two patterns in Table~\ref{tab:tau} follow from Eq.~(\ref{eq:activity}). First, the rows for $\tau_{\text{dormant}} = 7$, 14 and 30 days are identical: because $\rho_i(t)$ counts only uses in the last $\Delta T = 7$ days, a hashtag unseen for more than 7 days already has zero activity, so thresholds above $\Delta T$ have no additional effect. Second, with $\tau_{\text{dormant}} = 1$ day, $\tau_{\text{decay}}$ has no effect: usage histories come from the training split and the test period begins about 1.8 days after training ends, so every test hashtag is reset to zero temporal energy, as the Lifecycle Equivalence rule prescribes. Switching off the temporal component in this way changes Silhouette by only 0.003. The Election 2020 corpus spans 25 days, so the default dormancy threshold of 30 days is not exercised on this dataset.
 
-A further reason for the stability in Tables~\ref{tab:alpha} and~\ref{tab:tau} is that, in practice, the energies of the hashtags within a tweet differ little relative to the softmax scale (the hashtag and text energies are bounded by $\alpha_1$ and $\alpha_2$, and the temporal energy is zero for about half of the tweets), so the weights within a tweet stay close to uniform: on the Election 2020 test split, the largest deviation of a tweet's weights from $1/|H_d|$ averages 0.014 (95th percentile 0.047). Consistent with this, replacing the energy weights by uniform weights $1/|H_d|$ gives Silhouette $0.149 \pm 0.004$ against $0.143 \pm 0.007$ for the energy weights (Welch $p = 0.14$), while binary hashtag indicators give $0.105 \pm 0.005$ (Election 2020, $K=20$, seeds 42--46, sample s.d.). To compare the contextual weights directly with frequency-based weighting, we also weight each hashtag by its inverse document frequency in the training split, $\mathrm{idf}(h) = \ln\bigl(N/(1+\mathrm{df}(h))\bigr) + 1$, on the same vocabulary and with the same protocol. Normalised to sum to one within each tweet, as the energy weights are, IDF weights give $0.138 \pm 0.025$, which does not differ from the energy weights (Welch $p = 0.67$) but varies considerably across seeds; with the L2 normalisation usual for TF-IDF they give $0.124 \pm 0.005$ ($p = 0.001$). Under the same per-tweet normalisation, therefore, neither the contextual nor the frequency-based weights improve on uniform weighting, and the normalisation affects Silhouette more than the choice of weights.
+A further reason for the stability in Tables~\ref{tab:alpha} and~\ref{tab:tau} is that, in practice, the energies of the hashtags within a tweet differ little relative to the softmax scale (the hashtag and text energies are bounded by $\alpha_1$ and $\alpha_2$, and the temporal energy is zero for about half of the tweets), so the weights within a tweet stay close to uniform: on the Election 2020 test split, the largest deviation of a tweet's weights from $1/|H_d|$ averages 0.014 (95th percentile 0.047). Consistent with this, replacing the energy weights by uniform weights $1/|H_d|$ gives Silhouette $0.149 \pm 0.004$ against $0.143 \pm 0.007$ for the energy weights (Welch $p = 0.14$), while binary hashtag indicators give $0.105 \pm 0.005$ (Election 2020, $K=20$, seeds 42--46, sample s.d.). To compare the contextual weights directly with frequency-based weighting, we also weight each hashtag by its inverse document frequency in the training split, $\mathrm{idf}(h) = \ln\bigl(N/(1+\mathrm{df}(h))\bigr) + 1$, on the same vocabulary and with the same protocol. Normalised to sum to one within each tweet, as the energy weights are, IDF weights give $0.138 \pm 0.025$, which does not differ from the energy weights (Welch $p = 0.67$) but varies considerably across seeds; with the L2 normalisation usual for TF-IDF they give $0.124 \pm 0.005$ ($p = 0.001$). Under the same per-tweet normalisation, therefore, neither the contextual nor the frequency-based weights improve on uniform weighting, and the normalisation affects Silhouette more than the choice of weights. Figure~\ref{fig:weighting} shows the per-seed scores: the energy, uniform and per-tweet normalised IDF weights overlap, and the IDF weights vary most across seeds.
+
+\begin{figure}[t]
+\centering
+\includegraphics{fig_weighting.pdf}
+\caption{Silhouette of five hashtag weighting schemes on Election 2020 ($K=20$, K-means, seeds 42--46), all using the same vocabulary, test tweets and clustering protocol. Each dot is one seed and the vertical bar marks the mean; the dashed line marks the mean of the energy weights. Values on the right are the mean and sample standard deviation over seeds. The energy, uniform and per-tweet normalised IDF weights overlap, whereas the L2-normalised IDF weights and binary indicators score lower.}
+\label{fig:weighting}
+\end{figure}
 
 \subsection{Cross-Domain Summary}\label{subsec23}
 
