@@ -20,6 +20,7 @@ them after running the script.
 | Table 7 | Sensitivity to τ_dormant, τ_decay (20 settings) | `scripts/revision/sensitivity_alpha_tau.py` | `results/election2020/sensitivity_tau.csv`, `sensitivity_runs.csv` |
 | Section 5.5 | Holm-corrected Welch tests and ANOVA for Tables 6–7 | `scripts/revision/sensitivity_stats.py` | computed from `results/election2020/sensitivity_runs.csv` |
 | Section 5.5 | Deviation from uniform weights (0.014, 95th percentile 0.047); uniform (0.149 ± 0.004) and binary (0.105 ± 0.005) weights | `scripts/revision/revision_diagnostics.py` | `results/election2020/diagnostics_runs.csv`, `diagnostics_summary.json` |
+| Section 5.5 | IDF-weighted hashtags: per-tweet normalised 0.138 ± 0.025 (p = 0.67), L2-normalised 0.124 ± 0.005 (p = 0.001); energy and uniform re-run alongside | `scripts/revision/idf_baseline.py` | `results/election2020/idf_baseline_election2020.csv` |
 | Section 6.6 | Repeated hashtag vectors (23%); Silhouette after removing them (0.091; uniform 0.089) | `scripts/revision/revision_diagnostics.py` | `results/election2020/diagnostics_runs.csv`, `diagnostics_summary.json` |
 | Section 6.3 | Top hashtags per cluster | `scripts/experiments/qualitative_analysis.py` | `cluster_stats_k20_election2020.csv` *(local)* |
 | Table 8 | Cross-domain summary | Derived from Tables 2–7 | — |
